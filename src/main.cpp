@@ -1,9 +1,10 @@
 #include <imgui.h>
+#include <print>
+#include <entt.hpp>
 #include "raylib.h"
 #include "rlImGui.h"
 
 void setup_raylib() {
-
     const auto display = GetCurrentMonitor();
     const int screen_width = GetMonitorWidth(display);
     const int screen_height = GetMonitorHeight(display);
@@ -19,7 +20,7 @@ auto main() -> int {
 
     rlImGuiSetup(true);
 
-    while(!WindowShouldClose()) {
+    while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
