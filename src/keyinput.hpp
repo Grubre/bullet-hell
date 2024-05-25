@@ -19,7 +19,7 @@ class KeyManager {
     [[nodiscard]] static auto make_subscriber(callback_t &&callback) -> Subscriber;
 
   public:
-    [[nodiscard]] auto subscribe(raylib_key_t key, callback_t &&callback) -> subscriber_id_t;
+    auto subscribe(raylib_key_t key, callback_t &&callback) -> subscriber_id_t;
     void unsubscribe(subscriber_id_t id);
     void notify(raylib_key_t key);
 

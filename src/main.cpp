@@ -25,7 +25,7 @@ auto main() -> int {
     bh::KeyManager manager{};
 
     const auto sub_id = manager.subscribe(KEY_W, []() { std::println("Pressed w!"); });
-    const auto _ = manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
+    manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
