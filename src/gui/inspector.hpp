@@ -51,8 +51,9 @@ template <InspectableComponent... Component> struct Inspector {
         ImGui::SeparatorText("List");
         for (auto entity : registry->view<entt::entity>()) {
             i = 0u;
+
             bool has_all_components =
-                ([&]() { return registry->all_of<Component>(entity) == component_filter[i++]; }() && ...);
+                ([&]() { return !component_filter[i++] || registry->all_of<Component>(entity); }() && ...);
 
             if (!has_all_components) {
                 continue;
