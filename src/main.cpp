@@ -12,10 +12,12 @@
 #include "assets/asset_manager.hpp"
 #include "assets/assets_loader.hpp"
 #include "components/velocity.hpp"
+#include "fmt/base.h"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
 #include "components/relations.hpp"
 #include "gui/inspector.hpp"
+#include "collisions.hpp"
 
 void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -95,6 +97,19 @@ auto main() -> int {
     auto sprite2 = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
     registry.emplace<bh::Parented>(sprite2, sprite);
+
+    bh::add_collision_body_to(registry, sprite, bh::Circle { 100.f });
+    bh::add_collision_body_to(registry, sprite2, bh::Circle { 100.f });
+
+    auto dispatcher = entt::dispatcher{};
+
+    struct test_listener {
+        void receive(const bh::CollidesWithEvent &event) { fmt::println("Collided with {}", (int)event.with); }
+    };
+
+    test_listener listener{};
+    dispatcher.sink<bh::CollidesWithEvent>().connect<&test_listener::receive>(listener);
+    registry.emplace<bh::CollisionHandler>(sprite, std::move(dispatcher));
     
     auto inspector = bh::Inspector<bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
     inspector.current_entity = sprite;
@@ -116,6 +131,13 @@ auto main() -> int {
         bh::destroy_unparented(registry);
         bh::propagate_parent_transform(registry);
 
+        bh::test_collsions(registry);
+
+        auto v = registry.view<bh::CollisionHandler>();
+        for (auto &&[e, handler] : v.each()) {
+            handler.dispatcher.update();
+        }
+
         rlImGuiBegin();
 
         inspector.draw_gui();
@@ -123,6 +145,8 @@ auto main() -> int {
         rlImGuiEnd();
 
         bh::render_sprites(registry);
+
+        bh::debug_draw_collsions(registry);
 
         EndDrawing();
     }
