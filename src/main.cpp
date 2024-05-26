@@ -13,6 +13,7 @@
 #include "assets/assets_loader.hpp"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
+#include "gui/inspector.hpp"
 
 void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -85,10 +86,13 @@ auto main() -> int {
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound,SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    manager.subscribe(KEY_A,[&](){ PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN));});
+    manager.subscribe(KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
     auto sprite = registry.create();
 
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
+
+    auto inspector = bh::Inspector<bh::Transform, bh::Sprite>(&registry);
+    inspector.current_entity = sprite;
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
@@ -102,7 +106,10 @@ auto main() -> int {
         }
 
         rlImGuiBegin();
+
         ImGui::ShowDemoWindow();
+        inspector.draw_gui();
+
         rlImGuiEnd();
 
         bh::render_sprites(registry);
