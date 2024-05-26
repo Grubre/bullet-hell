@@ -6,7 +6,7 @@
 #include <string>
 #include <type_traits>
 
-namespace stratgame {
+namespace bh {
 [[nodiscard]] auto get_asset_path(const std::filesystem::path &resource_path) -> Expected<std::filesystem::path>;
 
 template <typename Func, typename... Args>
@@ -17,4 +17,4 @@ template <typename Func, typename... Args>
     return func(unwrap(get_asset_path(std::forward<Args>(args))).string().c_str()...);
 }
 
-} // namespace stratgame
+} // namespace bh

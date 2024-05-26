@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <raylib.h>
 
-namespace stratgame {
+namespace bh {
 
 [[nodiscard]] auto get_asset_path(const std::filesystem::path &resource_path) -> Expected<std::filesystem::path> {
     // If we have a resources directory defined, use that
@@ -23,4 +23,4 @@ namespace stratgame {
     return std::unexpected(std::string{"Resource not found: "} + resource_path.string());
 }
 
-} // namespace stratgame
+} // namespace bh

@@ -7,6 +7,9 @@
 #include <imgui.h>
 #include <fmt/printf.h>
 #include <entt.hpp>
+#include "asset_manager.hpp"
+#include "assets_loader.hpp"
+#include "components.hpp"
 #include "fmt/base.h"
 #include "raylib.h"
 #include "rlImGui.h"
@@ -29,12 +32,22 @@ auto main() -> int {
 
     rlImGuiSetup(true);
 
+    auto registry = entt::registry();
+
     bh::KeyManager manager{};
 
     const auto sub_id = manager.subscribe(KEY_W, []() { fmt::println("Pressed w!"); });
     manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
-    
+    auto asset_manager = bh::AssetManager();
+
+    auto image = bh::load_asset(LoadImage, "unknown.png");
+    using TE = bh::TextureEnum;
+    asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
+
+    auto sprite = registry.create();
+
+    bh::emplace_sprite(registry, sprite, TE::PLAYER_TEXTURE);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
@@ -45,6 +58,8 @@ auto main() -> int {
         rlImGuiBegin();
         ImGui::ShowDemoWindow();
         rlImGuiEnd();
+
+        bh::render_sprites(registry);
 
         EndDrawing();
     }
