@@ -14,6 +14,10 @@ template <typename T>
 concept InspectableComponent = requires(T t, entt::registry &registry, entt::entity entity) {
     { T::name } -> std::convertible_to<const char *>;
     { t.inspect(registry, entity) };
+} || requires() {
+    { T::name } -> std::convertible_to<const char *>;
+    { T::inspect() };
+    { std::is_empty_v<T> };
 };
 
 template <InspectableComponent... Component> struct Inspector {
@@ -96,8 +100,12 @@ template <InspectableComponent... Component> struct Inspector {
                     return;
                 }
                 if (ImGui::CollapsingHeader(Component::name)) {
-                    auto &component = registry->get<Component>(entity);
-                    component.inspect(*registry, entity);
+                    if constexpr (std::is_empty_v<Component>) {
+                        Component::inspect();
+                    } else {
+                        auto &component = registry->get<Component>(entity);
+                        component.inspect(*registry, entity);
+                    }
                 }
             }(),
             ...);

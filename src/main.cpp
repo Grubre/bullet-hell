@@ -68,6 +68,14 @@ void setup_raylib() {
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 */
 
+struct Flag {
+    static constexpr auto name = "Flag";
+
+    static void inspect() {
+        ImGui::Text("Flag");
+    }
+};
+
 auto main() -> int {
     setup_raylib();
 
@@ -89,6 +97,7 @@ auto main() -> int {
     asset_manager.register_sound(sound, SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
     manager.subscribe(bh::SubscriberType::RELEASE,KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
     bh::emplace<bh::DebugName>(registry, sprite, "Sprite");
@@ -96,9 +105,16 @@ auto main() -> int {
     auto sprite2 = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
     bh::emplace<bh::DebugName>(registry, sprite2, "Sprite 2");
+    bh::emplace<Flag>(registry, sprite2);
     registry.emplace<bh::Parented>(sprite2, sprite);
 
-    auto inspector = bh::Inspector<bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
+    for(auto i = 0u; i < 100; i++) {
+        auto ent = registry.create();
+        bh::emplace<bh::GlobalTransform>(registry, ent);
+        bh::emplace<bh::DebugName>(registry, ent, fmt::format("Sprite {}", i));
+    }
+
+    auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
     inspector.current_entity = sprite;
 
     while (!WindowShouldClose()) {
