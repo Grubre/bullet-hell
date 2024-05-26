@@ -1,5 +1,5 @@
 #pragma once
-#include "error.hpp"
+#include "../error.hpp"
 #include <expected>
 #include <filesystem>
 #include <raylib.h>

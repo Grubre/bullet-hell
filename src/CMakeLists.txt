@@ -1,7 +1,7 @@
 set(EXEC_NAME "main")
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 
-add_executable(${EXEC_NAME} main.cpp keyinput.cpp assets_loader.cpp asset_manager.cpp
+add_executable(${EXEC_NAME} main.cpp keyinput.cpp assets/assets_loader.cpp assets/asset_manager.cpp
         components/sprite.hpp
         components/velocity.hpp)
 

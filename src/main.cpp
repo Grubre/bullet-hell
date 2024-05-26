@@ -7,8 +7,8 @@
 #include <imgui.h>
 #include <fmt/printf.h>
 #include <entt.hpp>
-#include "asset_manager.hpp"
-#include "assets_loader.hpp"
+#include "assets/asset_manager.hpp"
+#include "assets/assets_loader.hpp"
 #include "raylib.h"
 #include "rlImGui.h"
 #include "keyinput.hpp"
