@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imgui.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <entt.hpp>
@@ -8,6 +9,7 @@
 namespace bh {
 
 struct Transform {
+    static constexpr auto name = "Transform";
     Vector2 position;
 
     Transform combine(Transform& other) {
@@ -17,10 +19,20 @@ struct Transform {
 
 struct LocalTransform {
     Transform transform;
+
+    static void inspect(entt::registry &registry, entt::entity entity) {
+        auto &transform = registry.get<Transform>(entity);
+        ImGui::DragFloat2("Transform", &transform.position.x, 1.0f);
+    }
 };
 
 struct GlobalTransform {
     Transform transform;
+
+    static void inspect(entt::registry &registry, entt::entity entity) {
+        auto &transform = registry.get<Transform>(entity);
+        ImGui::DragFloat2("Transform", &transform.position.x, 1.0f);
+    }
 };
 
 using Velocity = Vector2;

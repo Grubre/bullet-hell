@@ -5,7 +5,7 @@ namespace bh {
 
 template <typename T, typename... Args>
 void emplace(entt::registry &registry, entt::entity entity, const Args &...args) {
-    registry.emplace<T>(entity, std::forward(args)...);
+    registry.emplace<T>(entity, args...);
 }
 
 } // namespace bh
