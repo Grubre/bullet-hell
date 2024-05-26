@@ -5,7 +5,7 @@ namespace bh {
 struct Player {};
 
 template <> inline void emplace<Player>(entt::registry &registry, entt::entity entity) {
-    emplace<Transform>(registry, entity);
+    emplace<LocalTransform>(registry, entity);
     registry.emplace<Player>(entity);
 }
 

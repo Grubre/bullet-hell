@@ -11,8 +11,10 @@
 #include <entt.hpp>
 #include "assets/asset_manager.hpp"
 #include "assets/assets_loader.hpp"
+#include "components/velocity.hpp"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
+#include "components/relations.hpp"
 
 void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -87,8 +89,11 @@ auto main() -> int {
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
     manager.subscribe(KEY_A,[&](){ PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN));});
     auto sprite = registry.create();
-
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
+
+    auto sprite2 = registry.create();
+    bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
+    registry.emplace<bh::Parented>(sprite2, sprite);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);

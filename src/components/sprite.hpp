@@ -29,16 +29,16 @@ struct Sprite {
 
 template <>
 inline void emplace<Sprite, TextureEnum>(entt::registry &registry, entt::entity entity, const TextureEnum &id) {
-    emplace<Transform>(registry, entity);
+    emplace<LocalTransform>(registry, entity);
     emplace<Visible>(registry, entity);
     auto texture = registry.ctx().get<AssetManager>().get_texture(id);
     registry.emplace<Sprite>(entity, texture, 0);
 }
 
 inline void render_sprites(entt::registry &registry) {
-    auto sprite_group = registry.view<Sprite, Transform, Visible>();
+    auto sprite_group = registry.view<Sprite, GlobalTransform, Visible>();
     for (auto &&[entity, sprite, transform] : sprite_group.each()) {
-        DrawTextureRec(sprite.asset.texture, sprite.rect(), transform.position, WHITE);
+        DrawTextureRec(sprite.asset.texture, sprite.rect(), transform.transform.position, WHITE);
     }
 }
 } // namespace bh
