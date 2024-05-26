@@ -47,7 +47,7 @@ auto main() -> int {
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
     asset_manager.register_sound(sound,SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    PlaySound(asset_manager.get_sound(SE::WIN));
+    manager.subscribe(KEY_A,[&](){ PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN));});
     auto sprite = registry.create();
 
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE, (uint16_t)100, (uint16_t)80, (uint16_t)0);
