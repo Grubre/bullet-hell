@@ -3,7 +3,7 @@
 #include <entt.hpp>
 #include "velocity.hpp"
 #include "../asset_manager.hpp"
-#include "../common.hpp"
+#include "common.hpp"
 namespace bh {
 struct Sprite {
     Texture2D texture;

@@ -1,5 +1,5 @@
 #include "common.hpp"
-#include "components.hpp"
+#include "velocity.hpp"
 
 namespace bh {
 struct Player {};
@@ -9,5 +9,9 @@ template <> inline void emplace<Player>(entt::registry &registry, entt::entity e
     registry.emplace<Player>(entity);
 }
 
-[[nodiscard]] auto make_player(entt::registry &registry) -> entt::entity;
+[[nodiscard]] auto make_player(entt::registry &registry) -> entt::entity {
+    const auto entity = registry.create();
+    bh::emplace<bh::Player>(registry, entity);
+    return entity;
+}
 } // namespace bh
