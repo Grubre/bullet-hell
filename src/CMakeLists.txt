@@ -20,6 +20,7 @@ endif()
 
 target_compile_options(${EXEC_NAME} PRIVATE ${MAIN_FLAGS})
 
+target_include_directories(${EXEC_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${EXEC_NAME} Entt raylib Simplex Imgui fmt)
 
 # raylib OSX dependencies

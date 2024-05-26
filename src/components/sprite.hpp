@@ -11,7 +11,8 @@ struct Sprite {
 
 struct Visible {};
 
-template <> inline void emplace<Sprite, TextureEnum>(entt::registry &registry, entt::entity entity, TextureEnum &&id) {
+template <>
+inline void emplace<Sprite, TextureEnum>(entt::registry &registry, entt::entity entity, const TextureEnum &id) {
     emplace<Transform>(registry, entity);
     emplace<Visible>(registry, entity);
     auto texture = registry.ctx().get<AssetManager>().get_texture(id);

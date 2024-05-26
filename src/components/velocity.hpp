@@ -2,8 +2,7 @@
 
 #include <raylib.h>
 #include <entt.hpp>
-#include "../asset_manager.hpp"
-#include "../common.hpp"
+#include "common.hpp"
 
 namespace bh {
 struct Transform {
