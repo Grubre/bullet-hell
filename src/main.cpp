@@ -4,13 +4,13 @@
 ///     - Component AnimatedSprite(texture, texture_size, cell_size, sprite_id)
 ///     - Component Visible(empty)
 
+#include <raylib.h>
+#include <rlImGui.h>
 #include <imgui.h>
 #include <fmt/printf.h>
 #include <entt.hpp>
 #include "assets/asset_manager.hpp"
 #include "assets/assets_loader.hpp"
-#include "raylib.h"
-#include "rlImGui.h"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
 
@@ -50,13 +50,18 @@ auto main() -> int {
     PlaySound(asset_manager.get_sound(SE::WIN));
     auto sprite = registry.create();
 
-    bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE, (uint16_t)100, (uint16_t)80, (uint16_t)0);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
+
+        if (IsKeyPressed(KEY_SPACE)) {
+            auto &sprite_sprite = registry.get<bh::Sprite>(sprite);
+            sprite_sprite.sprite_id++;
+        }
 
         rlImGuiBegin();
         ImGui::ShowDemoWindow();
