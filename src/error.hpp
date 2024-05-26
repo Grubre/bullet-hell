@@ -1,14 +1,14 @@
 #pragma once
 #include <expected>
 #include <string>
-#include <print>
+#include <fmt/printf.h>
 
 namespace stratgame {
 using Error = std::string;
 template <typename T> using Expected = std::expected<T, Error>;
 
 [[noreturn]] inline void throw_error(const Error &error) {
-    std::println("Error: {}", error);
+    fmt::println(stderr, "Error: {}", error);
     std::exit(1);
 }
 

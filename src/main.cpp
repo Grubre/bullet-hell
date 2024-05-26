@@ -1,5 +1,5 @@
 #include <imgui.h>
-#include <print>
+#include <fmt/printf.h>
 #include <entt.hpp>
 #include "raylib.h"
 #include "rlImGui.h"
@@ -13,7 +13,7 @@ void setup_raylib() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     // SetConfigFlags(FLAG_VSYNC_HINT);
 
-    std::println("Resolution is: {}x{}", screen_width, screen_height);
+    fmt::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
 }
 
@@ -24,7 +24,7 @@ auto main() -> int {
 
     bh::KeyManager manager{};
 
-    const auto sub_id = manager.subscribe(KEY_W, []() { std::println("Pressed w!"); });
+    const auto sub_id = manager.subscribe(KEY_W, []() { fmt::println("Pressed w!"); });
     manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     while (!WindowShouldClose()) {

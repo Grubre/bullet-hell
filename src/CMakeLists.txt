@@ -18,7 +18,7 @@ endif()
 
 target_compile_options(${EXEC_NAME} PRIVATE ${MAIN_FLAGS})
 
-target_link_libraries(${EXEC_NAME} Entt raylib Simplex Imgui)
+target_link_libraries(${EXEC_NAME} Entt raylib Simplex Imgui fmt)
 
 # raylib OSX dependencies
 if(APPLE)
