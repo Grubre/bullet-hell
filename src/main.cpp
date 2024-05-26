@@ -88,7 +88,7 @@ auto main() -> int {
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound,SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    manager.subscribe(KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+    manager.subscribe(KEY_W, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
 
@@ -105,14 +105,19 @@ auto main() -> int {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (IsKeyPressed(KEY_SPACE)) {
-            auto &sprite_sprite = registry.get<bh::Sprite>(sprite);
-            sprite_sprite.sprite_id++;
+        if (IsKeyPressed(KEY_D)) {
+            inspector.current_entity = sprite;
         }
+
+        if (IsKeyPressed(KEY_A)) {
+            inspector.current_entity = sprite2;
+        }
+
+        bh::destroy_unparented(registry);
+        bh::propagate_parent_transform(registry);
 
         rlImGuiBegin();
 
-        ImGui::ShowDemoWindow();
         inspector.draw_gui();
 
         rlImGuiEnd();

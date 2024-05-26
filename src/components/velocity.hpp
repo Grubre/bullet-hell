@@ -12,7 +12,7 @@ struct Transform {
     static constexpr auto name = "Transform";
     Vector2 position;
 
-    Transform combine(Transform& other) {
+    Transform combine(Transform& other) const {
         return Transform { Vector2Add(position, other.position) };
     }
 

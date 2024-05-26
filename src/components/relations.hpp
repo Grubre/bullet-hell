@@ -22,11 +22,16 @@ inline void destroy_unparented(entt::registry &registry) {
 /// Zakłada, że wszystkie parenty są validne
 /// Najlepiej wcześniej puścić "destroy_unparented", żeby się nie zdziwić
 inline void propagate_parent_transform(entt::registry &registry) {
-    auto view = registry.view<Parented, bh::GlobalTransform, bh::LocalTransform>();
+    auto view = registry.view<bh::GlobalTransform, bh::LocalTransform>();
 
-    for (auto &&[self, parent, global, local] : view.each()) {
-        auto parent_transform = registry.get<bh::GlobalTransform>(parent.parent);
-        global.transform = parent_transform.transform.combine(local.transform);
+    for (auto &&[self, global, local] : view.each()) {
+        if (registry.all_of<Parented>(self)) {
+            auto parent = registry.get<bh::Parented>(self);
+            auto parent_transform = registry.get<bh::GlobalTransform>(parent.parent);
+            global.transform = parent_transform.transform.combine(local.transform);
+        } else {
+            global.transform = local.transform;
+        }
     }
 }
 
