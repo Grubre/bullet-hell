@@ -42,13 +42,13 @@ auto main() -> int {
 
     auto image = bh::load_asset(LoadImage, "unknown.png");
     using TE = bh::TextureEnum;
-    asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
+    asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
 
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
 
     auto sprite = registry.create();
 
-    bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE, (uint16_t)100, (uint16_t)80, (uint16_t)0);
+    bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
