@@ -91,9 +91,11 @@ auto main() -> int {
     manager.subscribe(bh::SubscriberType::RELEASE,KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::DebugName>(registry, sprite, "Sprite");
 
     auto sprite2 = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::DebugName>(registry, sprite2, "Sprite 2");
     registry.emplace<bh::Parented>(sprite2, sprite);
 
     auto inspector = bh::Inspector<bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
@@ -118,6 +120,7 @@ auto main() -> int {
 
         rlImGuiBegin();
 
+        ImGui::ShowDemoWindow();
         inspector.draw_gui();
 
         rlImGuiEnd();
