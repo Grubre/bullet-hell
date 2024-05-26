@@ -1,6 +1,13 @@
+/// TODO
+/// - Rendering
+///     - Component Sprite(texture)
+///     - Component AnimatedSprite(texture, texture_size, cell_size, sprite_id) 
+///     - Component Visible(empty)
+
 #include <imgui.h>
 #include <fmt/printf.h>
 #include <entt.hpp>
+#include "fmt/base.h"
 #include "raylib.h"
 #include "rlImGui.h"
 #include "keyinput.hpp"
@@ -27,6 +34,8 @@ auto main() -> int {
     const auto sub_id = manager.subscribe(KEY_W, []() { fmt::println("Pressed w!"); });
     manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
+    
+
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
 
@@ -40,7 +49,7 @@ auto main() -> int {
         EndDrawing();
     }
 
-    CloseWindow();
     rlImGuiShutdown();
+    CloseWindow();
     return 0;
 }

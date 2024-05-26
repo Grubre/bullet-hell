@@ -1,7 +1,7 @@
 set(EXEC_NAME "main")
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 
-add_executable(${EXEC_NAME} main.cpp keyinput.cpp assets_loader.cpp)
+add_executable(${EXEC_NAME} main.cpp keyinput.cpp assets_loader.cpp asset_manager.cpp)
 
 target_compile_definitions(${EXEC_NAME} PRIVATE RESOURCES_DIR="${RESOURCES_DIR}")
 
