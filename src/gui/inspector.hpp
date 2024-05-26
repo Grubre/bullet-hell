@@ -39,10 +39,22 @@ template <InspectableComponent... Component> struct Inspector {
 
   private:
     void display_entities() {
-        // get parent width
-        ImGui::BeginChild("Entities list", ImVec2(ImGui::GetContentRegionAvail().x / 2, 0), 1);
+        ImGui::BeginChild("Entity list", ImVec2(ImGui::GetContentRegionAvail().x / 2, 0), 1);
+        ImGui::SeparatorText("Toggle components");
+        auto i = 0u;
+        ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
+
+        ImGui::SeparatorText("List");
         for (auto entity : registry->view<entt::entity>()) {
-            auto name = registry->try_get<DebugName>(entity);
+            i = 0u;
+            bool has_all_components =
+                ([&]() { return registry->all_of<Component>(entity) == component_filter[i++]; }() && ...);
+
+            if (!has_all_components) {
+                continue;
+            }
+
+            auto *const name = registry->try_get<DebugName>(entity);
 
             ImGui::Text("%d (%s)", (int)entity, name != nullptr ? name->name.c_str() : "unknown");
             ImGui::PushID((int)entity);
@@ -61,8 +73,14 @@ template <InspectableComponent... Component> struct Inspector {
 
         ImGui::BeginChild("Entity Inspector", ImVec2(ImGui::GetContentRegionAvail().x, 0), 1);
 
+        ImGui::SeparatorText("Entity data");
         ImGui::PushID((int)entity);
+        ImGui::BeginGroup();
         ImGui::Text("Entity: %d", (int)entity);
+        if (auto *name = registry->try_get<DebugName>(entity)) {
+            ImGui::Text("Name: %s", name->name.c_str());
+        }
+        ImGui::EndGroup();
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(EntityTypeName)) {
                 current_entity = *(entt::entity *)payload->Data;
@@ -71,6 +89,7 @@ template <InspectableComponent... Component> struct Inspector {
         }
         ImGui::PopID();
 
+        ImGui::SeparatorText("Components");
         (
             [&]() {
                 if (!registry->all_of<Component>(entity)) {
@@ -86,6 +105,7 @@ template <InspectableComponent... Component> struct Inspector {
     }
 
     entt::registry *registry;
+    std::array<bool, sizeof...(Component)> component_filter{};
 };
 
 } // namespace bh
