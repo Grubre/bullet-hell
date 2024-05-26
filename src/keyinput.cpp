@@ -2,16 +2,15 @@
 #include <raylib.h>
 #include "keyinput.hpp"
 
-[[nodiscard]] auto bh::KeyManager::make_subscriber(callback_t &&callback) -> Subscriber {
+[[nodiscard]] auto bh::KeyManager::make_subscriber(callback_t &&callback,SubscriberType type) -> Subscriber {
     static subscriber_id_t id = 0;
-    return Subscriber{std::move(callback), id++};
+    return Subscriber{type,std::move(callback), id++};
 }
 
-auto bh::KeyManager::subscribe(raylib_key_t key, callback_t &&callback) -> subscriber_id_t {
-    auto subscriber = make_subscriber(std::move(callback));
+auto bh::KeyManager::subscribe(SubscriberType type,raylib_key_t key, callback_t &&callback) -> subscriber_id_t {
+    auto subscriber = make_subscriber(std::move(callback),type);
     const auto id = subscriber.id;
     subscribers[key].push_back(std::move(subscriber));
-
     return id;
 }
 
@@ -22,18 +21,21 @@ void bh::KeyManager::unsubscribe(subscriber_id_t id) {
     }
 }
 
-void bh::KeyManager::notify(raylib_key_t key) {
-    if (!subscribers.contains(key)) {
-        return;
-    }
-
-    for (const auto &sub : subscribers[key]) {
-        sub.callback();
-    }
-}
-
 void bh::notify_keyboard_press_system(bh::KeyManager &manager) {
-    while (const auto key = GetKeyPressed()) {
-        manager.notify(key);
+    for (const auto& x : manager.subscribers){
+        for (const auto& y : x.second){
+            switch (y.type) {
+            case SubscriberType::PRESS:
+                if (IsKeyPressed(x.first)){
+                    y.callback();
+                }
+                break;
+            case SubscriberType::RELEASE:
+                if (IsKeyReleased(x.first)){
+                    y.callback();
+                }
+                break;
+            }
+        }
     }
 }

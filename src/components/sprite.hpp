@@ -30,9 +30,10 @@ struct Sprite {
     }
 
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
+        static constexpr auto minimum = 1;
         ImGui::Text("Sprite");
-        ImGui::DragScalar("Cell size x", ImGuiDataType_U16, &asset.cell_size_x, 1.0f);
-        ImGui::DragScalar("Cell size y", ImGuiDataType_U16, &asset.cell_size_y, 1.0f);
+        ImGui::DragScalar("Cell size x", ImGuiDataType_U16, &asset.cell_size_x, 1.0f, &minimum, &asset.texture.width);
+        ImGui::DragScalar("Cell size y", ImGuiDataType_U16, &asset.cell_size_y, 1.0f, &minimum, &asset.texture.height);
         ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &sprite_id, 1.0f);
     }
 };

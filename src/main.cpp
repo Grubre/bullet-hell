@@ -70,6 +70,14 @@ void setup_raylib() {
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 */
 
+struct Flag {
+    static constexpr auto name = "Flag";
+
+    static void inspect() {
+        ImGui::Text("Flag");
+    }
+};
+
 auto main() -> int {
     setup_raylib();
 
@@ -78,9 +86,9 @@ auto main() -> int {
     auto registry = entt::registry();
 
     bh::KeyManager manager{};
-
-    const auto sub_id = manager.subscribe(KEY_W, []() { fmt::println("Pressed w!"); });
-    manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
+    registry.ctx().emplace<bh::KeyManager>(manager);
+    const auto sub_id = manager.subscribe(bh::SubscriberType::PRESS,KEY_W, []() { fmt::println("Pressed w!"); });
+    manager.subscribe(bh::SubscriberType::PRESS,KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     auto asset_manager = bh::AssetManager();
     auto sound = bh::load_asset(LoadSound, "win.mp3");
@@ -88,14 +96,18 @@ auto main() -> int {
     using TE = bh::TextureEnum;
     using SE = bh::SoundEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
-    asset_manager.register_sound(sound,SE::WIN);
+    asset_manager.register_sound(sound, SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    manager.subscribe(KEY_W, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+    manager.subscribe(bh::SubscriberType::RELEASE,KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::DebugName>(registry, sprite, "Sprite");
 
     auto sprite2 = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::DebugName>(registry, sprite2, "Sprite 2");
+    bh::emplace<Flag>(registry, sprite2);
     registry.emplace<bh::Parented>(sprite2, sprite);
 
     bh::add_collision_body_to(registry, sprite, bh::Circle { 100.f });
@@ -111,7 +123,13 @@ auto main() -> int {
     dispatcher.sink<bh::CollidesWithEvent>().connect<&test_listener::receive>(listener);
     registry.emplace<bh::CollisionHandler>(sprite, std::move(dispatcher));
     
-    auto inspector = bh::Inspector<bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
+    for(auto i = 0u; i < 100; i++) {
+        auto ent = registry.create();
+        bh::emplace<bh::GlobalTransform>(registry, ent);
+        bh::emplace<bh::DebugName>(registry, ent, fmt::format("Sprite {}", i));
+    }
+
+    auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
     inspector.current_entity = sprite;
 
     while (!WindowShouldClose()) {
@@ -140,6 +158,7 @@ auto main() -> int {
 
         rlImGuiBegin();
 
+        ImGui::ShowDemoWindow();
         inspector.draw_gui();
 
         rlImGuiEnd();
