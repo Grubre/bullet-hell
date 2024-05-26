@@ -38,21 +38,14 @@ target_link_libraries(Imgui raylib)
 target_include_directories(Imgui PUBLIC ${IMGUI_DIR} ${IMGUI_RAYLIB_DIR})
 set_target_properties(Imgui PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Imgui,INTERFACE_INCLUDE_DIRECTORIES>)
 
+include(FetchContent)
 
 # fmt
 find_package(fmt)
 if (NOT fmt_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-        fmt
-        URL https://github.com/fmtlib/fmt
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    FetchContent_Declare(fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG master
     )
-    FetchContent_GetProperties(fmt)
-    if (NOT fmt_POPULATED)
-        set(FETCHCONTENT_QUIET NO)
-        FetchContent_Populate(fmt)
-        set(BUILD_EXAMPLES OFF CAHCE BOOL "" FORCE)
-        add_subdirectory(${fmt_SOURCE_DIR})
-    endif()
+    FetchContent_MakeAvailable(fmt)
 endif()
