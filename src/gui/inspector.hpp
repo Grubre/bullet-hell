@@ -7,8 +7,9 @@
 
 namespace bh {
 template <typename T>
-concept InspectableComponent = requires(entt::registry &registry, entt::entity entity) {
-    { T::inspect(registry, entity) };
+concept InspectableComponent = requires(T t, entt::registry &registry, entt::entity entity) {
+    { T::name } -> std::convertible_to<const char *>;
+    { t.inspect(registry, entity) };
 };
 
 template <InspectableComponent... Component> struct Inspector {
@@ -34,7 +35,8 @@ template <InspectableComponent... Component> struct Inspector {
                     return;
                 }
                 if (ImGui::CollapsingHeader(Component::name)) {
-                    Component::inspect(*registry, entity);
+                    auto &component = registry->get<Component>(entity);
+                    component.inspect(*registry, entity);
                 }
             }(),
             ...);

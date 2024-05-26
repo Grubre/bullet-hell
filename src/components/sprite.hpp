@@ -31,12 +31,11 @@ struct Sprite {
                          .height = (float)cell_size_y};
     }
 
-    static void inspect(entt::registry &registry, entt::entity entity) {
-        auto &sprite = registry.get<Sprite>(entity);
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
         ImGui::Text("Sprite");
-        ImGui::DragScalar("Cell size x", ImGuiDataType_U16, &sprite.cell_size_x, 1.0f);
-        ImGui::DragScalar("Cell size y", ImGuiDataType_U16, &sprite.cell_size_y, 1.0f);
-        ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &sprite.sprite_id, 1.0f);
+        ImGui::DragScalar("Cell size x", ImGuiDataType_U16, &cell_size_x, 1.0f);
+        ImGui::DragScalar("Cell size y", ImGuiDataType_U16, &cell_size_y, 1.0f);
+        ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &sprite_id, 1.0f);
     }
 };
 

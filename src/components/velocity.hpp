@@ -10,9 +10,8 @@ struct Transform {
     static constexpr auto name = "Transform";
     Vector2 position;
 
-    static void inspect(entt::registry &registry, entt::entity entity) {
-        auto &transform = registry.get<Transform>(entity);
-        ImGui::DragFloat2("Transform", &transform.position.x, 1.0f);
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
+        ImGui::DragFloat2("Transform", &position.x, 1.0f);
     }
 };
 
