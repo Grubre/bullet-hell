@@ -9,11 +9,10 @@
 #include <entt.hpp>
 #include "asset_manager.hpp"
 #include "assets_loader.hpp"
-#include "components.hpp"
-#include "fmt/base.h"
 #include "raylib.h"
 #include "rlImGui.h"
 #include "keyinput.hpp"
+#include "components/sprite.hpp"
 
 void setup_raylib() {
     const auto display = GetCurrentMonitor();
