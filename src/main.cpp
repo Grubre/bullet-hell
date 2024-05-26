@@ -24,6 +24,7 @@ void setup_raylib() {
 
     fmt::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
+    InitAudioDevice();
 }
 
 auto main() -> int {
@@ -39,13 +40,14 @@ auto main() -> int {
     manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     auto asset_manager = bh::AssetManager();
-
+    auto sound = bh::load_asset(LoadSound, "win.mp3");
     auto image = bh::load_asset(LoadImage, "unknown.png");
     using TE = bh::TextureEnum;
+    using SE = bh::SoundEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
-
+    asset_manager.register_sound(sound,SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-
+    PlaySound(asset_manager.get_sound(SE::WIN));
     auto sprite = registry.create();
 
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
@@ -64,7 +66,7 @@ auto main() -> int {
 
         EndDrawing();
     }
-
+    CloseAudioDevice();
     rlImGuiShutdown();
     CloseWindow();
     return 0;
