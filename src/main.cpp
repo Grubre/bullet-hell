@@ -1,7 +1,7 @@
 /// TODO
 /// - Rendering
 ///     - Component Sprite(texture)
-///     - Component AnimatedSprite(texture, texture_size, cell_size, sprite_id) 
+///     - Component AnimatedSprite(texture, texture_size, cell_size, sprite_id)
 ///     - Component Visible(empty)
 
 #include <imgui.h>
@@ -43,12 +43,12 @@ auto main() -> int {
     auto image = bh::load_asset(LoadImage, "unknown.png");
     using TE = bh::TextureEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
-    
+
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
 
     auto sprite = registry.create();
 
-    bh::emplace_sprite(registry, sprite, TE::PLAYER_TEXTURE);
+    bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
