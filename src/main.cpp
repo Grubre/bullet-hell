@@ -44,6 +44,8 @@ auto main() -> int {
     auto image = bh::load_asset(LoadImage, "unknown.png");
     using TE = bh::TextureEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE);
+    
+    registry.ctx().emplace<bh::AssetManager>(asset_manager);
 
     auto sprite = registry.create();
 
