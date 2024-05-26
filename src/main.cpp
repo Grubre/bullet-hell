@@ -86,7 +86,7 @@ auto main() -> int {
     using TE = bh::TextureEnum;
     using SE = bh::SoundEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
-    asset_manager.register_sound(sound,SE::WIN);
+    asset_manager.register_sound(sound, SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
     manager.subscribe(KEY_W, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
     auto sprite = registry.create();
@@ -95,7 +95,7 @@ auto main() -> int {
     auto sprite2 = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
     registry.emplace<bh::Parented>(sprite2, sprite);
-    
+
     auto inspector = bh::Inspector<bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
     inspector.current_entity = sprite;
 
