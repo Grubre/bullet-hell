@@ -76,9 +76,9 @@ auto main() -> int {
     auto registry = entt::registry();
 
     bh::KeyManager manager{};
-
-    const auto sub_id = manager.subscribe(KEY_W, []() { fmt::println("Pressed w!"); });
-    manager.subscribe(KEY_S, [&]() { manager.unsubscribe(sub_id); });
+    registry.ctx().emplace<bh::KeyManager>(manager);
+    const auto sub_id = manager.subscribe(bh::SubscriberType::PRESS,KEY_W, []() { fmt::println("Pressed w!"); });
+    manager.subscribe(bh::SubscriberType::PRESS,KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     auto asset_manager = bh::AssetManager();
     auto sound = bh::load_asset(LoadSound, "win.mp3");
@@ -88,7 +88,7 @@ auto main() -> int {
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound, SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    manager.subscribe(KEY_W, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+    manager.subscribe(bh::SubscriberType::RELEASE,KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
 

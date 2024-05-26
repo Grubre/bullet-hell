@@ -2,7 +2,6 @@
 #include "assets_loader.hpp"
 #include <expected>
 #include <filesystem>
-#include <raylib.h>
 
 namespace bh {
 
