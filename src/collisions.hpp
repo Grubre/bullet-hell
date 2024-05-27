@@ -2,6 +2,7 @@
 #include "components/velocity.hpp"
 #include "components/common.hpp"
 #include "fmt/base.h"
+#include <cstdint>
 #include <raylib.h>
 #include <raymath.h>
 #include <utility>
@@ -15,11 +16,67 @@ struct overloaded : Ts... { using Ts::operator()...; };
 
 struct Circle {
     float radius;
+
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
+        ImGui::DragFloat("Radius", &radius, 1.f);
+    }
+};
+
+struct Rect {
+    float width;
+    float height;
+
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
+        ImGui::DragFloat2("Width/Height", &width, 1.f);
+    }
 };
 
 struct CollisionBody {
-    std::variant<Circle> body;
+    std::variant<Circle, Rect> body;
     entt::entity handler;
+
+    static constexpr auto name = "CollisionBody";
+
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {        
+        int current_component = std::visit(overloaded {
+            [&]([[maybe_unused]] Circle& c) { 
+                return 0;
+            },
+            [&]([[maybe_unused]] Rect& c) { 
+                return 1;
+            },
+        }, body);
+        
+        int chosen_component = current_component;
+        ImGui::RadioButton("Circle", &chosen_component, 0); 
+        ImGui::SameLine();
+        ImGui::RadioButton("Rectangle", &chosen_component, 1); 
+
+        if (chosen_component != current_component) {
+            switch (chosen_component) {
+                case 0: {
+                    body = Circle { 100.0f };
+                    break;
+                }
+                case 1: {
+                    body = Rect { 100.0f, 100.0f };
+                    break;
+                }
+                default: std::unreachable();
+            }
+        }
+
+        std::visit(overloaded {
+            [&](Circle& c) { 
+                c.inspect(registry, entity);
+            },
+            [&](Rect& r) { 
+                r.inspect(registry, entity);
+            },
+        }, body);
+
+        ImGui::Text("Handler %d", (int)handler);
+    }
 };
 
 struct EnterCollisionEvent {
@@ -65,9 +122,22 @@ inline bool circle_circle_test(Circle &a, Transform &a_tr, Circle &b, Transform 
     return Vector2Length(diff) <= a.radius + b.radius;
 }
 
+/// TODO
+inline bool rect_circle_test(Rect &a, Transform &a_tr, Circle &b, Transform &b_tr) {
+    return false;
+}
+
+/// TODO
+inline bool rect_rect_test(Rect &a, Transform &a_tr, Rect &b, Transform &b_tr) {
+    return false;
+}
+
 inline bool collides_with(CollisionBody& a, Transform &a_tr, CollisionBody &b, Transform &b_tr) {
     return std::visit(overloaded {
-        [&](Circle& a_c, Circle& b_c) { return circle_circle_test(a_c, a_tr, b_c, b_tr); },
+        [&](Circle& a, Circle& b) { return circle_circle_test(a, a_tr, b, b_tr); },
+        [&](Rect& a, Circle& b) { return rect_circle_test(a, a_tr, b, b_tr); },
+        [&](Circle& a, Rect& b) { return rect_circle_test(b, b_tr, a, a_tr); },
+        [&](Rect& a, Rect& b) { return rect_rect_test(a, a_tr, b, b_tr); },
     }, a.body, b.body);
 }
 
@@ -97,11 +167,19 @@ inline void test_collisions(entt::registry& registry) {
 inline void debug_draw_collsions(entt::registry& registry) {
     auto view = registry.view<GlobalTransform, CollisionBody>();
 
+
     for (const auto &&[a_e, a_tr, a] : view.each()) {
+        auto color = ColorAlpha(BLUE, 0.5f);
+
         std::visit(overloaded {
-            [&](Circle& a_c) { 
+            [&](Circle& c) { 
                 auto center = a_tr.transform.position;
-                DrawCircle((int)center.x, (int)center.y, a_c.radius, ColorAlpha(BLUE, 0.5f));
+                DrawCircle((int)center.x, (int)center.y, c.radius, color);
+            },
+            [&](Rect& r) { 
+                auto pos = a_tr.transform.position;
+                auto rot = a_tr.transform.rotation;
+                DrawRectanglePro(Rectangle { pos.x, pos.y, r.width, r.height}, Vector2(r.width/2.f, r.height/2.f), rot * RAD2DEG, color);
             },
         }, a.body);
     }

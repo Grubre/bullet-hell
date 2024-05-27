@@ -126,7 +126,7 @@ auto main() -> int {
         bh::emplace<bh::DebugName>(registry, ent, fmt::format("Sprite {}", i));
     }
 
-    auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
+    auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody>(&registry);
     inspector.current_entity = sprite;
 
     bh::init_collision_event_queues(registry);
