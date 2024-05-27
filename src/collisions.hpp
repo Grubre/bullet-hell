@@ -1,7 +1,6 @@
 #include "components/relations.hpp"
 #include "components/velocity.hpp"
 #include "components/common.hpp"
-#include "fmt/base.h"
 #include <cstdint>
 #include <raylib.h>
 #include <raymath.h>

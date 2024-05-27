@@ -13,7 +13,6 @@
 #include "assets/assets_loader.hpp"
 #include "components/common.hpp"
 #include "components/velocity.hpp"
-#include "fmt/base.h"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
 #include "components/relations.hpp"
@@ -78,7 +77,7 @@ struct Flag {
 };
 
 struct TestCollisionHandler {
-    static void on_collision_entered(entt::registry& registry, bh::EnterCollisionEvent& event) {
+    static void on_collision_entered(entt::registry &registry, bh::EnterCollisionEvent &event) {
         fmt::println("Collided {} {}", (int)event.body, (int)event.with);
     }
 };
@@ -126,7 +125,8 @@ auto main() -> int {
         bh::emplace<bh::DebugName>(registry, ent, fmt::format("Sprite {}", i));
     }
 
-    auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody>(&registry);
+    auto inspector =
+        bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody>(&registry);
     inspector.current_entity = sprite;
 
     bh::init_collision_event_queues(registry);
@@ -152,16 +152,16 @@ auto main() -> int {
 
         bh::dipatch_events(registry);
 
+        bh::render_sprites(registry);
+
+        bh::debug_draw_collsions(registry);
+
         rlImGuiBegin();
 
         ImGui::ShowDemoWindow();
         inspector.draw_gui();
 
         rlImGuiEnd();
-
-        bh::render_sprites(registry);
-
-        bh::debug_draw_collsions(registry);
 
         EndDrawing();
     }
