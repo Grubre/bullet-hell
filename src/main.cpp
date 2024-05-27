@@ -94,8 +94,6 @@ auto main() -> int {
     const auto sub_id = manager.subscribe(bh::KeyboardEvent::DOWN, KEY_W, []() { fmt::println("Pressed w!"); });
     manager.subscribe(bh::KeyboardEvent::PRESS, KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
-    [[maybe_unused]]auto player = bh::make_player(registry);
-
     auto& asset_manager = registry.ctx().emplace<bh::AssetManager>();
     auto sound = bh::load_asset(LoadSound, "win.mp3");
     auto image = bh::load_asset(LoadImage, "unknown.png");
@@ -127,10 +125,14 @@ auto main() -> int {
     }
 
     auto inspector =
-        bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody>(&registry);
+        bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody,bh::Alive,bh::Health,bh::Player,bh::Velocity>(&registry);
     inspector.current_entity = sprite;
 
     bh::init_collision_event_queues(registry);
+
+    [[maybe_unused]]auto player = bh::make_player(registry);
+
+    manager.subscribe(bh::KeyboardEvent::PRESS,KEY_B,[&](){registry.get<bh::Health>(player).dealDamage(10);});
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);

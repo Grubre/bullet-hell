@@ -64,11 +64,18 @@ template <> inline void emplace<GlobalTransform>(entt::registry &registry, entt:
     registry.emplace_or_replace<GlobalTransform>(entity);
     registry.emplace_or_replace<LocalTransform>(entity);
 }
-
-using Velocity = Vector2;
+struct Velocity{
+    static constexpr auto name = "Velocity";
+    float x=0;
+    float y=0;
+    void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
+        ImGui::Value("X",x);
+        ImGui::Value("Y",y);
+    }
+};
 template <> inline void emplace<Velocity>(entt::registry &registry, entt::entity entity) {
     emplace<LocalTransform>(registry, entity);
-    registry.emplace<Velocity>(entity, Vector2{0, 0});
+    registry.emplace<Velocity>(entity);
 }
 
 } // namespace bh
