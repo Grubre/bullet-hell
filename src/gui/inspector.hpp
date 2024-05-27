@@ -93,7 +93,7 @@ template <InspectableComponent... Component> struct Inspector {
 
     void display_component_creator() {
 
-        ImGui::PushID((int)currently_chosen_component_idx);
+        ImGui::PushID((int)generated_component.index());
         ImGui::BeginChild("Component creator", ImVec2(0, 0), 1);
         ImGui::SeparatorText("Component creator");
 
@@ -119,9 +119,8 @@ template <InspectableComponent... Component> struct Inspector {
         if (ImGui::BeginPopup(chosen_component_name)) {
             uint32_t i = 0;
             iterate_components([&]<InspectableComponent Comp>() {
-                if (ImGui::MenuItem(Comp::name, NULL, currently_chosen_component_idx == i)) {
+                if (ImGui::MenuItem(Comp::name, NULL, generated_component.index() == i)) {
                     generated_component = Comp{};
-                    currently_chosen_component_idx = i;
                     chosen_component_name = Comp::name;
 
                     ImGui::CloseCurrentPopup();
@@ -192,9 +191,11 @@ template <InspectableComponent... Component> struct Inspector {
                 uint32_t i = 0u;
                 (
                     [&]() {
-                        if (i++ != currently_chosen_component_idx ||
-                            std::holds_alternative<std::monostate>(generated_component))
+                        fmt::println("name: {}", Component::name);
+                        if (i++ != generated_component.index() ||
+                            std::holds_alternative<std::monostate>(generated_component)) {
                             return;
+                        }
 
                         registry->emplace_or_replace<Component>(entity, std::get<Component>(generated_component));
                     }(),
@@ -238,8 +239,7 @@ template <InspectableComponent... Component> struct Inspector {
         });
     }
 
-    uint32_t currently_chosen_component_idx = 0;
-    std::variant<std::monostate, Component...> generated_component = std::monostate{};
+    std::variant<Component..., std::monostate> generated_component = std::monostate{};
     entt::registry *registry;
     std::array<bool, sizeof...(Component)> component_filter{};
 };
