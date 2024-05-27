@@ -12,7 +12,6 @@
 #include "assets/asset_manager.hpp"
 #include "assets/assets_loader.hpp"
 #include "components/velocity.hpp"
-#include "fmt/base.h"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
 #include "components/relations.hpp"
@@ -73,9 +72,7 @@ void setup_raylib() {
 struct Flag {
     static constexpr auto name = "Flag";
 
-    static void inspect() {
-        ImGui::Text("Flag");
-    }
+    static void inspect() { ImGui::Text("Flag"); }
 };
 
 auto main() -> int {
@@ -87,8 +84,8 @@ auto main() -> int {
 
     bh::KeyManager manager{};
     registry.ctx().emplace<bh::KeyManager>(manager);
-    const auto sub_id = manager.subscribe(bh::SubscriberType::PRESS,KEY_W, []() { fmt::println("Pressed w!"); });
-    manager.subscribe(bh::SubscriberType::PRESS,KEY_S, [&]() { manager.unsubscribe(sub_id); });
+    const auto sub_id = manager.subscribe(bh::SubscriberType::PRESS, KEY_W, []() { fmt::println("Pressed w!"); });
+    manager.subscribe(bh::SubscriberType::PRESS, KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
     auto asset_manager = bh::AssetManager();
     auto sound = bh::load_asset(LoadSound, "win.mp3");
@@ -98,7 +95,8 @@ auto main() -> int {
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound, SE::WIN);
     registry.ctx().emplace<bh::AssetManager>(asset_manager);
-    manager.subscribe(bh::SubscriberType::RELEASE,KEY_A, [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
+    manager.subscribe(bh::SubscriberType::RELEASE, KEY_A,
+                      [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
 
     auto sprite = registry.create();
     bh::emplace<bh::Sprite>(registry, sprite, TE::PLAYER_TEXTURE);
@@ -110,20 +108,20 @@ auto main() -> int {
     bh::emplace<Flag>(registry, sprite2);
     registry.emplace<bh::Parented>(sprite2, sprite);
 
-    bh::add_collision_body_to(registry, sprite, bh::Circle { 100.f });
-    bh::add_collision_body_to(registry, sprite2, bh::Circle { 100.f });
+    bh::add_collision_body_to(registry, sprite, bh::Circle{100.f});
+    bh::add_collision_body_to(registry, sprite2, bh::Circle{100.f});
 
     auto dispatcher = entt::dispatcher{};
 
     struct test_listener {
-        void receive(const bh::CollidesWithEvent &event) { fmt::println("Collided with {}", (int)event.with); }
+        void receive(const bh::CollidesWithEvent &event) {}
     };
 
     test_listener listener{};
     dispatcher.sink<bh::CollidesWithEvent>().connect<&test_listener::receive>(listener);
     registry.emplace<bh::CollisionHandler>(sprite, std::move(dispatcher));
-    
-    for(auto i = 0u; i < 100; i++) {
+
+    for (auto i = 0u; i < 100; i++) {
         auto ent = registry.create();
         bh::emplace<bh::GlobalTransform>(registry, ent);
         bh::emplace<bh::DebugName>(registry, ent, fmt::format("Sprite {}", i));

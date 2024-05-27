@@ -3,6 +3,7 @@
 #include <fmt/printf.h>
 #include <imgui.h>
 #include <entt.hpp>
+#include <imgui_internal.h>
 #include <optional>
 
 namespace bh {
@@ -34,83 +35,112 @@ template <InspectableComponent... Component> struct Inspector {
             return;
         }
 
-        display_entities();
+        display_entity_list();
         ImGui::SameLine();
-        display_components();
+        display_entity_info();
 
         ImGui::End();
     }
 
   private:
-    void display_entities() {
+    void display_entity_list() {
         ImGui::BeginChild("Entity list", ImVec2(ImGui::GetContentRegionAvail().x / 2, 0), 1);
         ImGui::SeparatorText("Toggle components");
+
         auto i = 0u;
         ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
 
         ImGui::SeparatorText("List");
         for (auto entity : registry->view<entt::entity>()) {
             i = 0u;
-
-            bool has_all_components =
+            bool has_toggled_components =
                 ([&]() { return !component_filter[i++] || registry->all_of<Component>(entity); }() && ...);
 
-            if (!has_all_components) {
+            if (!has_toggled_components) {
                 continue;
             }
 
-            auto *const name = registry->try_get<DebugName>(entity);
-
-            ImGui::Text("%d (%s)", (int)entity, name != nullptr ? name->name.c_str() : "unknown");
-            ImGui::PushID((int)entity);
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-                ImGui::SetDragDropPayload(EntityTypeName, &entity, sizeof(entt::entity));
-                ImGui::Text("%d (%s)", (int)entity, name != nullptr ? name->name.c_str() : "unknown");
-                ImGui::EndDragDropSource();
-            }
-            ImGui::PopID();
+            display_entity_list_entry(entity);
         }
+
         ImGui::EndChild();
     }
 
-    void display_components() {
+    void display_entity_list_entry(entt::entity entity) {
+        auto *const name = registry->try_get<DebugName>(entity);
+
+        ImGui::PushID((int)entity);
+        const auto text = fmt::format("{} ({})", (int)entity, name != nullptr ? name->name : "unknown");
+
+        if (ImGui::Selectable(text.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
+            if (ImGui::IsMouseClicked(0)) {
+                current_entity = entity;
+            }
+        }
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload(EntityTypeName, &entity, sizeof(entt::entity));
+            ImGui::Text(text.c_str());
+            ImGui::EndDragDropSource();
+        }
+        ImGui::PopID();
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::SeparatorText(text.c_str());
+            iterate_components([&]<InspectableComponent Comp>() {
+                if (!registry->all_of<Comp>(entity)) {
+                    return;
+                }
+                ImGui::Text(Comp::name);
+            });
+            ImGui::EndTooltip();
+        }
+    }
+
+    void iterate_components(auto &&f) { (f.template operator()<Component>(), ...); }
+
+    void display_entity_info() {
         entt::entity entity = *current_entity;
 
         ImGui::BeginChild("Entity Inspector", ImVec2(ImGui::GetContentRegionAvail().x, 0), 1);
-
-        ImGui::SeparatorText("Entity data");
         ImGui::PushID((int)entity);
+        ImGui::SeparatorText("Entity data");
+
         ImGui::BeginGroup();
         ImGui::Text("Entity: %d", (int)entity);
         if (auto *name = registry->try_get<DebugName>(entity)) {
             ImGui::Text("Name: %s", name->name.c_str());
         }
         ImGui::EndGroup();
+
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(EntityTypeName)) {
                 current_entity = *(entt::entity *)payload->Data;
             }
             ImGui::EndDragDropTarget();
         }
-        ImGui::PopID();
 
-        ImGui::SeparatorText("Components");
-        (
-            [&]() {
-                if (!registry->all_of<Component>(entity)) {
-                    return;
-                }
-                if (ImGui::CollapsingHeader(Component::name)) {
-                    if constexpr (std::is_empty_v<Component>) {
-                        Component::inspect();
-                    } else {
-                        auto &component = registry->get<Component>(entity);
-                        component.inspect(*registry, entity);
-                    }
-                }
-            }(),
-            ...);
+        display_components(entity);
+
+        ImGui::PopID();
         ImGui::EndChild();
+    }
+
+    void display_components(entt::entity entity) {
+        ImGui::SeparatorText("Components");
+        iterate_components([&]<InspectableComponent Comp>() {
+            if (!registry->all_of<Comp>(entity)) {
+                return;
+            }
+            if (ImGui::CollapsingHeader(Comp::name)) {
+                if constexpr (std::is_empty_v<Comp>) {
+                    Comp::inspect();
+                } else {
+                    auto &component = registry->get<Comp>(entity);
+                    component.inspect(*registry, entity);
+                }
+            }
+        });
     }
 
     entt::registry *registry;
