@@ -5,7 +5,7 @@
 #include <entt.hpp>
 
 namespace bh {
-enum class SubscriberType : uint8_t { PRESS, RELEASE, UP, DOWN };
+enum class KeyboardEvent : uint8_t { PRESS, RELEASE, UP, DOWN };
 class KeyManager {
   public:
     using callback_t = std::function<void()>;
@@ -14,14 +14,14 @@ class KeyManager {
 
   private:
     struct Subscriber {
-        SubscriberType type;
+        KeyboardEvent type;
         callback_t callback;
         subscriber_id_t id;
     };
-    [[nodiscard]] static auto make_subscriber(callback_t &&callback, SubscriberType type) -> Subscriber;
+    [[nodiscard]] static auto make_subscriber(callback_t &&callback, KeyboardEvent type) -> Subscriber;
 
   public:
-    auto subscribe(SubscriberType type, raylib_key_t key, callback_t &&callback) -> subscriber_id_t;
+    auto subscribe(KeyboardEvent type, raylib_key_t key, callback_t &&callback) -> subscriber_id_t;
     void unsubscribe(subscriber_id_t id);
 
     std::unordered_map<raylib_key_t, std::vector<Subscriber>> subscribers;
