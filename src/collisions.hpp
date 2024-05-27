@@ -17,6 +17,8 @@ struct overloaded : Ts... { using Ts::operator()...; };
 struct Circle {
     float radius;
 
+    static constexpr auto id = 0;
+
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
         ImGui::DragFloat("Radius", &radius, 1.f);
     }
@@ -25,6 +27,8 @@ struct Circle {
 struct Rect {
     float width;
     float height;
+
+    static constexpr auto id = 1;
 
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
         ImGui::DragFloat2("Width/Height", &width, 1.f);
@@ -39,26 +43,21 @@ struct CollisionBody {
 
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {        
         int current_component = std::visit(overloaded {
-            [&]([[maybe_unused]] Circle& c) { 
-                return 0;
-            },
-            [&]([[maybe_unused]] Rect& c) { 
-                return 1;
-            },
+            [&](auto& c) { return c.id; }
         }, body);
         
         int chosen_component = current_component;
-        ImGui::RadioButton("Circle", &chosen_component, 0); 
+        ImGui::RadioButton("Circle", &chosen_component, Circle::id); 
         ImGui::SameLine();
-        ImGui::RadioButton("Rectangle", &chosen_component, 1); 
+        ImGui::RadioButton("Rectangle", &chosen_component, Rect::id); 
 
         if (chosen_component != current_component) {
             switch (chosen_component) {
-                case 0: {
+                case Circle::id: {
                     body = Circle { 100.0f };
                     break;
                 }
-                case 1: {
+                case Rect::id: {
                     body = Rect { 100.0f, 100.0f };
                     break;
                 }
@@ -67,12 +66,7 @@ struct CollisionBody {
         }
 
         std::visit(overloaded {
-            [&](Circle& c) { 
-                c.inspect(registry, entity);
-            },
-            [&](Rect& r) { 
-                r.inspect(registry, entity);
-            },
+            [&](auto& c) {c.inspect(registry, entity); }
         }, body);
 
         ImGui::Text("Handler %d", (int)handler);
