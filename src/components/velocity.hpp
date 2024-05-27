@@ -56,13 +56,13 @@ struct GlobalTransform {
 };
 
 template <> inline void emplace<LocalTransform>(entt::registry &registry, entt::entity entity) {
-    registry.emplace<GlobalTransform>(entity);
-    registry.emplace<LocalTransform>(entity);
+    registry.emplace_or_replace<GlobalTransform>(entity);
+    registry.emplace_or_replace<LocalTransform>(entity);
 }
 
 template <> inline void emplace<GlobalTransform>(entt::registry &registry, entt::entity entity) {
-    registry.emplace<GlobalTransform>(entity);
-    registry.emplace<LocalTransform>(entity);
+    registry.emplace_or_replace<GlobalTransform>(entity);
+    registry.emplace_or_replace<LocalTransform>(entity);
 }
 
 using Velocity = Vector2;

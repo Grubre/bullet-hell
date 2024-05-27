@@ -11,7 +11,9 @@
 #include <entt.hpp>
 #include "assets/asset_manager.hpp"
 #include "assets/assets_loader.hpp"
+#include "components/common.hpp"
 #include "components/velocity.hpp"
+#include "fmt/base.h"
 #include "keyinput.hpp"
 #include "components/sprite.hpp"
 #include "components/relations.hpp"
@@ -75,6 +77,12 @@ struct Flag {
     static void inspect() { ImGui::Text("Flag"); }
 };
 
+struct TestCollisionHandler {
+    static void on_collision_entered(entt::registry& registry, bh::EnterCollisionEvent& event) {
+        fmt::println("Collided {} {}", (int)event.body, (int)event.with);
+    }
+};
+
 auto main() -> int {
     setup_raylib();
 
@@ -106,20 +114,11 @@ auto main() -> int {
     bh::emplace<bh::Sprite>(registry, sprite2, TE::PLAYER_TEXTURE);
     bh::emplace<bh::DebugName>(registry, sprite2, "Sprite 2");
     bh::emplace<Flag>(registry, sprite2);
+    bh::emplace<bh::CollisionHandler>(registry, sprite2, TestCollisionHandler{});
     registry.emplace<bh::Parented>(sprite2, sprite);
 
-    bh::add_collision_body_to(registry, sprite, bh::Circle{100.f});
-    bh::add_collision_body_to(registry, sprite2, bh::Circle{100.f});
-
-    auto dispatcher = entt::dispatcher{};
-
-    struct test_listener {
-        void receive(const bh::CollidesWithEvent &event) {}
-    };
-
-    test_listener listener{};
-    dispatcher.sink<bh::CollidesWithEvent>().connect<&test_listener::receive>(listener);
-    registry.emplace<bh::CollisionHandler>(sprite, std::move(dispatcher));
+    bh::emplace_collision_body(registry, sprite, bh::Circle{100.f});
+    bh::emplace_collision_body(registry, sprite2, bh::Circle{100.f}, sprite2);
 
     for (auto i = 0u; i < 100; i++) {
         auto ent = registry.create();
@@ -129,6 +128,8 @@ auto main() -> int {
 
     auto inspector = bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite>(&registry);
     inspector.current_entity = sprite;
+
+    bh::init_collision_event_queues(registry);
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
@@ -147,12 +148,9 @@ auto main() -> int {
         bh::destroy_unparented(registry);
         bh::propagate_parent_transform(registry);
 
-        bh::test_collsions(registry);
+        bh::test_collisions(registry);
 
-        auto v = registry.view<bh::CollisionHandler>();
-        for (auto &&[e, handler] : v.each()) {
-            handler.dispatcher.update();
-        }
+        bh::dipatch_events(registry);
 
         rlImGuiBegin();
 
