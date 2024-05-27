@@ -92,6 +92,7 @@ template <InspectableComponent... Component> struct Inspector {
     }
 
     void display_component_creator() {
+
         ImGui::PushID((int)currently_chosen_component_idx);
         ImGui::BeginChild("Component creator", ImVec2(0, 0), 1);
         ImGui::SeparatorText("Component creator");
@@ -103,6 +104,12 @@ template <InspectableComponent... Component> struct Inspector {
         ImGui::SameLine();
         if (ImGui::Button(chosen_component_name, ImVec2(text_size.x + 10, 0))) {
             ImGui::OpenPopup(chosen_component_name);
+        }
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload(ComponentDragdropTypeName, &generated_component, sizeof(generated_component));
+            ImGui::Text(chosen_component_name);
+            ImGui::EndDragDropSource();
         }
 
         ImVec2 button_pos = ImGui::GetItemRectMin();
@@ -134,12 +141,6 @@ template <InspectableComponent... Component> struct Inspector {
 
         ImGui::EndChild();
         ImGui::EndGroup();
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload(ComponentDragdropTypeName, &generated_component, sizeof(generated_component));
-            ImGui::Text(chosen_component_name);
-            ImGui::EndDragDropSource();
-        }
         ImGui::PopID();
     }
 
@@ -205,11 +206,26 @@ template <InspectableComponent... Component> struct Inspector {
 
     void display_components(entt::entity entity) {
         ImGui::SeparatorText("Components");
+
         iterate_components([&]<InspectableComponent Comp>() {
             if (!registry->all_of<Comp>(entity)) {
                 return;
             }
-            if (ImGui::CollapsingHeader(Comp::name)) {
+
+            ImGui::PushID(Comp::name);
+
+            bool header_open = ImGui::CollapsingHeader(Comp::name);
+
+            // Create a popup menu on right-click
+            if (ImGui::BeginPopupContextItem("component_context_menu")) {
+                if (ImGui::MenuItem("Delete")) {
+                    registry->remove<Comp>(entity);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+
+            if (header_open) {
                 if constexpr (std::is_empty_v<Comp>) {
                     Comp::inspect();
                 } else {
@@ -217,6 +233,8 @@ template <InspectableComponent... Component> struct Inspector {
                     component.inspect(*registry, entity);
                 }
             }
+
+            ImGui::PopID();
         });
     }
 
