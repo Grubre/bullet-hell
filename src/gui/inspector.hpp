@@ -21,8 +21,17 @@ concept InspectableComponent = requires(T t, entt::registry &registry, entt::ent
     { std::is_empty_v<T> };
 };
 
+template <InspectableComponent T> void inspect(T &t, entt::registry &registry, entt::entity entity) {
+    if constexpr (std::is_empty_v<T>) {
+        T::inspect();
+    } else {
+        t.inspect(registry, entity);
+    }
+}
+
 template <InspectableComponent... Component> struct Inspector {
-    static constexpr auto EntityTypeName = "Entity";
+    static constexpr auto EntityDragDropTypeName = "Entity";
+    static constexpr auto ComponentDragdropTypeName = "Component";
     explicit Inspector(entt::registry *registry) : registry(registry) {}
 
     std::optional<entt::entity> current_entity;
@@ -35,22 +44,38 @@ template <InspectableComponent... Component> struct Inspector {
             return;
         }
 
-        display_entity_list();
-        ImGui::SameLine();
-        display_entity_info();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0)); // Optional: reduce spacing between items
 
+        // Split main window horizontally
+        ImGui::BeginGroup();
+        display_entity_list(ImVec2(ImGui::GetContentRegionAvail().x * (2.f / 5.f), ImGui::GetContentRegionAvail().y));
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
+        // Begin right column
+        ImGui::BeginGroup();
+        ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+
+        const auto entity_list_size = ImVec2(rightColumnSize.x, rightColumnSize.y * 3.f / 5.f);
+        display_entity_info(entity_list_size);
+
+        // Bottom part of the right column
+        display_component_creator();
+
+        ImGui::PopStyleVar();
         ImGui::End();
     }
 
   private:
-    void display_entity_list() {
-        ImGui::BeginChild("Entity list", ImVec2(ImGui::GetContentRegionAvail().x / 2, 0), 1);
+    void display_entity_list(ImVec2 size) {
+        ImGui::BeginChild("Entity list", size, 1);
         ImGui::SeparatorText("Toggle components");
 
         auto i = 0u;
         ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
 
-        ImGui::SeparatorText("List");
+        ImGui::SeparatorText("Entity List");
         for (auto entity : registry->view<entt::entity>()) {
             i = 0u;
             bool has_toggled_components =
@@ -66,10 +91,61 @@ template <InspectableComponent... Component> struct Inspector {
         ImGui::EndChild();
     }
 
+    void display_component_creator() {
+        ImGui::PushID((int)currently_chosen_component_idx);
+        ImGui::BeginChild("Component creator", ImVec2(0, 0), 1);
+        ImGui::SeparatorText("Component creator");
+
+        static const char *chosen_component_name = "None";
+        ImVec2 text_size = ImGui::CalcTextSize(chosen_component_name);
+
+        ImGui::Text("Chosen type: ");
+        ImGui::SameLine();
+        if (ImGui::Button(chosen_component_name, ImVec2(text_size.x + 10, 0))) {
+            ImGui::OpenPopup(chosen_component_name);
+        }
+
+        ImVec2 button_pos = ImGui::GetItemRectMin();
+        ImVec2 button_size = ImGui::GetItemRectSize();
+        ImGui::SetNextWindowPos(ImVec2(button_pos.x, button_pos.y + button_size.y), ImGuiCond_Appearing);
+
+        if (ImGui::BeginPopup(chosen_component_name)) {
+            uint32_t i = 0;
+            iterate_components([&]<InspectableComponent Comp>() {
+                if (ImGui::MenuItem(Comp::name, NULL, currently_chosen_component_idx == i)) {
+                    generated_component = Comp{};
+                    currently_chosen_component_idx = i;
+                    chosen_component_name = Comp::name;
+
+                    ImGui::CloseCurrentPopup();
+                }
+                i++;
+            });
+            ImGui::EndPopup();
+        }
+
+        ImGui::SeparatorText("Component data");
+
+        std::visit(entt::overloaded{
+                       [&](std::monostate) { ImGui::Text("No component selected"); },
+                       [&](auto &component) { inspect(component, *registry, entt::null); },
+                   },
+                   generated_component);
+
+        ImGui::EndChild();
+        ImGui::EndGroup();
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload(ComponentDragdropTypeName, &generated_component, sizeof(generated_component));
+            ImGui::Text(chosen_component_name);
+            ImGui::EndDragDropSource();
+        }
+        ImGui::PopID();
+    }
+
     void display_entity_list_entry(entt::entity entity) {
         auto *const name = registry->try_get<DebugName>(entity);
 
-        ImGui::PushID((int)entity);
         const auto text = fmt::format("{} ({})", (int)entity, name != nullptr ? name->name : "unknown");
 
         if (ImGui::Selectable(text.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
@@ -78,12 +154,6 @@ template <InspectableComponent... Component> struct Inspector {
             }
         }
 
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload(EntityTypeName, &entity, sizeof(entt::entity));
-            ImGui::Text(text.c_str());
-            ImGui::EndDragDropSource();
-        }
-        ImGui::PopID();
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::SeparatorText(text.c_str());
@@ -99,11 +169,10 @@ template <InspectableComponent... Component> struct Inspector {
 
     void iterate_components(auto &&f) { (f.template operator()<Component>(), ...); }
 
-    void display_entity_info() {
+    void display_entity_info(ImVec2 size) {
         entt::entity entity = *current_entity;
 
-        ImGui::BeginChild("Entity Inspector", ImVec2(ImGui::GetContentRegionAvail().x, 0), 1);
-        ImGui::PushID((int)entity);
+        ImGui::BeginChild("Entity Inspector", size, 1);
         ImGui::SeparatorText("Entity data");
 
         ImGui::BeginGroup();
@@ -113,17 +182,25 @@ template <InspectableComponent... Component> struct Inspector {
         }
         ImGui::EndGroup();
 
+        display_components(entity);
+
+        ImGui::EndChild();
+
         if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(EntityTypeName)) {
-                current_entity = *(entt::entity *)payload->Data;
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ComponentDragdropTypeName)) {
+                uint32_t i = 0u;
+                (
+                    [&]() {
+                        if (i++ != currently_chosen_component_idx ||
+                            std::holds_alternative<std::monostate>(generated_component))
+                            return;
+
+                        registry->emplace_or_replace<Component>(entity, std::get<Component>(generated_component));
+                    }(),
+                    ...);
             }
             ImGui::EndDragDropTarget();
         }
-
-        display_components(entity);
-
-        ImGui::PopID();
-        ImGui::EndChild();
     }
 
     void display_components(entt::entity entity) {
@@ -143,6 +220,8 @@ template <InspectableComponent... Component> struct Inspector {
         });
     }
 
+    uint32_t currently_chosen_component_idx = 0;
+    std::variant<std::monostate, Component...> generated_component = std::monostate{};
     entt::registry *registry;
     std::array<bool, sizeof...(Component)> component_filter{};
 };
