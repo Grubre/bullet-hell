@@ -52,11 +52,14 @@ inline void render_sprites(entt::registry &registry) {
         auto rect = sprite.rect();
         auto tr = transform.transform;
 
+        auto width = rect.width * tr.scale.x;
+        auto height = rect.height * tr.scale.y;
+
         DrawTexturePro(
             sprite.asset.texture, 
             rect, 
-            Rectangle { tr.position.x, tr.position.y, rect.width, rect.height }, 
-            Vector2(rect.width / 2.f, rect.height / 2.f), RAD2DEG * tr.rotation, WHITE);
+            Rectangle { tr.position.x, tr.position.y, width, height }, 
+            Vector2(width / 2.f, height / 2.f), RAD2DEG * tr.rotation, WHITE);
     }
 }
 } // namespace bh

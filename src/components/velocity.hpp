@@ -12,17 +12,17 @@ struct Transform {
     static constexpr auto name = "Transform";
     Vector2 position;
     float rotation;
+    Vector2 scale = Vector2(1.0f,1.0f);
 
     /// Aplikuje najpierw swój transform, a dopiero potem other
     [[nodiscard]] Transform combine(const Transform& other) const {
-        auto rotated_local = Vector2Rotate(other.position, rotation);
-        auto translated_local = Vector2Add(rotated_local, position);
-
-        return Transform { translated_local, rotation + other.rotation };
+        auto transformed_local = transform_point(other.position);
+        return Transform { transformed_local, rotation + other.rotation, Vector2Multiply(scale, other.scale) };
     }
 
     [[nodiscard]] Vector2 transform_point(const Vector2& point) const {
-        auto rotated = Vector2Rotate(point, rotation);
+        auto scaled = Vector2Multiply(point, scale);
+        auto rotated = Vector2Rotate(scaled, rotation);
         auto translated = Vector2Add(rotated, position);
 
         return translated;
@@ -31,6 +31,7 @@ struct Transform {
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
         ImGui::DragFloat2("Transform", &position.x, 1.0f);
         ImGui::DragFloat("Rotation", &rotation, 0.05f);
+        ImGui::DragFloat2("Scale", &scale.x, 0.5f);
     }
 };
 
