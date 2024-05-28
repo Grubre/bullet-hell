@@ -11,17 +11,18 @@ struct ShootingState;
 struct MovingState;
 
 struct StateI {
+    virtual ~StateI() = default;
     virtual void remove_self(entt::registry &registry, entt::entity entity) = 0;
 };
 
 struct CurrentState {
-    StateI *x;
+    StateI *ptr;
 };
 
 template <typename From, typename To, typename... Args>
 void move_to_state(entt::registry &registry, entt::entity entity, const Args &...args) {
     auto &current_state = registry.get<CurrentState>(entity);
-    current_state.x = &registry.emplace<To>(entity, args...);
+    current_state.ptr = &registry.emplace<To>(entity, args...);
 }
 
 template <typename T, typename C>
