@@ -101,7 +101,7 @@ auto main() -> int {
     using SE = bh::SoundEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound, SE::WIN);
-    manager.subscribe(bh::KeyboardEvent::RELEASE, KEY_A,
+    manager.subscribe(bh::KeyboardEvent::RELEASE, KEY_P,
                       [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
 
     auto sprite = registry.create();
@@ -132,7 +132,7 @@ auto main() -> int {
 
     [[maybe_unused]]auto player = bh::make_player(registry);
 
-    manager.subscribe(bh::KeyboardEvent::PRESS,KEY_B,[&](){registry.get<bh::Health>(player).dealDamage(10);});
+    manager.subscribe(bh::KeyboardEvent::PRESS,KEY_B,[&](){bh::deal_damage(registry,player,10);});
 
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
@@ -158,6 +158,7 @@ auto main() -> int {
         bh::render_sprites(registry);
 
         bh::debug_draw_collsions(registry);
+        bh::move_things(registry);
 
         rlImGuiBegin();
 

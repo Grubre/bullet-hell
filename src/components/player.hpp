@@ -19,15 +19,15 @@ struct Health{
         static constexpr auto minimum = 0;
         ImGui::DragInt("Health",&health,1,minimum,maxHealth);
     }
-    bool dealDamage(int amount){
-        if(amount >=health){
-            health =0;
-            return true;
-        }
-        health -= amount;
-        return false;
-    }
 };
+void deal_damage(entt::registry& registry, entt::entity& entity, int amount){
+    auto& health = registry.get<Health>(entity);
+    health.health-=amount;
+    if(health.health <= 0){
+        registry.remove<Alive>(entity);
+    }
+
+}
 struct Player {
     static constexpr auto name = "Player";
     float speed = 1;
