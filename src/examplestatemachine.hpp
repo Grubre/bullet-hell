@@ -141,4 +141,69 @@ template <typename State> void advanceState(entt::registry &registry) {
         state.advance(registry, entity);
     }
 }
+
+
+template<typename ...States>
+struct StateMachine {
+    uint8_t current_state;
+
+    void iterate_states(auto &&f) { (f.template operator()<States>(), ...); }
+
+    template<typename To>
+    void move_to_state(entt::registry& registry, entt::entity entity) {
+        
+        uint8_t i = 0;
+
+        iterate_states([&]<typename T>() {
+            if (current_state == i++) {
+                registry.remove<T>(entity);
+                registry.emplace<To>(entity);
+            }
+        });
+    }
+};
+
+template<typename ...States>
+struct StatelessMachine {
+    static void iterate_states(auto &&f) { (f.template operator()<States>(), ...); }
+
+    template<typename To>
+    static void move_to_state(entt::registry& registry, entt::entity entity) {
+        iterate_states([&]<typename T>() {
+            registry.remove<T>(entity);
+        });
+        registry.emplace<To>(entity);
+    }
+};
+
+struct EnemyShootingState;
+struct EnemyRunningState;
+
+using EnemyStatelessMachine = StatelessMachine<EnemyShootingState, EnemyRunningState>;
+
+struct EnemyShootingState {
+    void advance(entt::registry &registry, entt::entity &entity) {
+        EnemyStatelessMachine::move_to_state<EnemyRunningState>(registry, entity);
+    }
+};
+
+template<typename StMach>
+struct ShotingState {
+    void advance(entt::registry &registry, entt::entity &entity) {
+        StMach::template move_to_state<EnemyRunningState>(registry, entity);
+    }
+};
+
+
+struct EnemyRunningState {
+    void advance(entt::registry &registry, entt::entity &entity) {
+        EnemyStatelessMachine::move_to_state<EnemyShootingState>(registry, entity);
+    }
+};
+
+
+
+
+
+
 } // namespace bh
