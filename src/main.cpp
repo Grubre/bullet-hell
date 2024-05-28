@@ -30,6 +30,7 @@ void setup_raylib() {
 
     fmt::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
+    ToggleFullscreen();
     InitAudioDevice();
 }
 /*
