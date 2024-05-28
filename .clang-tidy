@@ -21,7 +21,9 @@ Checks: "*,
         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
         -cert-dcl16-c,
         -concurrency-mt-unsafe,
-        -bugprone-easily-swappable-parameters
+        -bugprone-easily-swappable-parameters,
+        -cppcoreguidelines-pro-type-vararg,
+        -hicpp-vararg
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

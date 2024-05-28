@@ -1,4 +1,6 @@
+#include "assets/asset_manager.hpp"
 #include "common.hpp"
+#include "components/sprite.hpp"
 #include "velocity.hpp"
 #include "keyinput.hpp"
 #include <fmt/printf.h>
