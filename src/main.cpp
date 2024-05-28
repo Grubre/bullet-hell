@@ -19,6 +19,7 @@
 #include "gui/inspector.hpp"
 #include "collisions.hpp"
 #include "components/player.hpp"
+#include "examplestatemachine.hpp"
 
 void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -120,6 +121,8 @@ auto main() -> int {
     bh::emplace_collision_body(registry, sprite, bh::Circle{100.f});
     bh::emplace_collision_body(registry, sprite2, bh::Circle{100.f}, sprite2);
 
+    registry.emplace<bh::ShootingState>(sprite2, 2, 1.f);
+
     for (auto i = 0u; i < 100; i++) {
         auto ent = registry.create();
         bh::emplace<bh::GlobalTransform>(registry, ent);
@@ -127,7 +130,8 @@ auto main() -> int {
     }
 
     auto inspector =
-        bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody>(&registry);
+        bh::Inspector<Flag, bh::LocalTransform, bh::GlobalTransform, bh::Sprite, bh::CollisionBody,
+        bh::MovingState, bh::ShootingState>(&registry);
     inspector.current_entity = sprite;
 
     bh::init_collision_event_queues(registry);
@@ -145,6 +149,9 @@ auto main() -> int {
         if (IsKeyPressed(KEY_A)) {
             inspector.current_entity = sprite2;
         }
+
+        bh::advanceState<bh::ShootingState>(registry);
+        bh::advanceState<bh::MovingState>(registry);
 
         bh::destroy_unparented(registry);
         bh::propagate_parent_transform(registry);

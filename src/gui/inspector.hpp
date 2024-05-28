@@ -5,6 +5,7 @@
 #include <entt.hpp>
 #include <imgui_internal.h>
 #include <optional>
+#include <variant>
 
 namespace bh {
 struct DebugName {
