@@ -223,16 +223,10 @@ struct ShotingState {
 
 
 struct EnemyRunningState {
-    void advance(entt::registry &registry, entt::entity entity) {
+    void advance(entt::registry &registry, entt::entity entity) {}
+
+    void change_state(entt::registry &registry, entt::entity entity) {
+        EnemyStatelessMachine::move_to_state<EnemyShootingState>(registry, entity);
     }
-
-    void change_state(entt::registry &registry, entt::entity entity){
-    	EnemyStatelessMachine::move_to_state<EnemyShootingState>(registry, entity);
-    };
-
-
-
-
-
-
+};
 } // namespace bh
