@@ -43,7 +43,7 @@ inline void emplace<Sprite, TextureEnum>(entt::registry &registry, entt::entity 
     emplace<GlobalTransform>(registry, entity);
     emplace<Visible>(registry, entity);
     auto texture = registry.ctx().get<AssetManager>().get_texture(id);
-    registry.emplace<Sprite>(entity, texture, uint16_t{} );
+    bh::safe_emplace<Sprite>(registry, entity, texture, uint16_t{});
 }
 
 inline void render_sprites(entt::registry &registry) {
@@ -55,11 +55,8 @@ inline void render_sprites(entt::registry &registry) {
         auto width = rect.width * tr.scale.x;
         auto height = rect.height * tr.scale.y;
 
-        DrawTexturePro(
-            sprite.asset.texture, 
-            rect, 
-            Rectangle { tr.position.x, tr.position.y, width, height }, 
-            Vector2(width / 2.f, height / 2.f), RAD2DEG * tr.rotation, WHITE);
+        DrawTexturePro(sprite.asset.texture, rect, Rectangle{tr.position.x, tr.position.y, width, height},
+                       Vector2(width / 2.f, height / 2.f), RAD2DEG * tr.rotation, WHITE);
     }
 }
 } // namespace bh

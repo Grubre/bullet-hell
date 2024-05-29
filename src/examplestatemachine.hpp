@@ -1,3 +1,4 @@
+#include "components/common.hpp"
 #include "components/sprite.hpp"
 #include <cstdint>
 #include <entt.hpp>
@@ -12,7 +13,7 @@ template <typename... States> struct StatelessMachine {
 
     template <typename To> static void move_to_state(entt::registry &registry, entt::entity entity) {
         iterate_states([&]<typename T>() { registry.remove<T>(entity); });
-        registry.emplace<To>(entity);
+        bh::emplace<To>(registry, entity);
     }
 
     static void advance_states(entt::registry &registry) {

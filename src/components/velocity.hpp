@@ -12,15 +12,15 @@ struct Transform {
     static constexpr auto name = "Transform";
     Vector2 position;
     float rotation;
-    Vector2 scale = Vector2(1.0f,1.0f);
+    Vector2 scale = Vector2(1.0f, 1.0f);
 
     /// Aplikuje najpierw swój transform, a dopiero potem other
-    [[nodiscard]] Transform combine(const Transform& other) const {
+    [[nodiscard]] Transform combine(const Transform &other) const {
         auto transformed_local = transform_point(other.position);
-        return Transform { transformed_local, rotation + other.rotation, Vector2Multiply(scale, other.scale) };
+        return Transform{transformed_local, rotation + other.rotation, Vector2Multiply(scale, other.scale)};
     }
 
-    [[nodiscard]] Vector2 transform_point(const Vector2& point) const {
+    [[nodiscard]] Vector2 transform_point(const Vector2 &point) const {
         auto scaled = Vector2Multiply(point, scale);
         auto rotated = Vector2Rotate(scaled, rotation);
         auto translated = Vector2Add(rotated, position);
@@ -64,23 +64,23 @@ template <> inline void emplace<GlobalTransform>(entt::registry &registry, entt:
     registry.emplace_or_replace<GlobalTransform>(entity);
     registry.emplace_or_replace<LocalTransform>(entity);
 }
-struct Velocity{
+struct Velocity {
     static constexpr auto name = "Velocity";
-    float x=0;
-    float y=0;
+    float x = 0;
+    float y = 0;
     void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
-        ImGui::Value("X",x);
-        ImGui::Value("Y",y);
+        ImGui::Value("X", x);
+        ImGui::Value("Y", y);
     }
 };
 template <> inline void emplace<Velocity>(entt::registry &registry, entt::entity entity) {
     emplace<LocalTransform>(registry, entity);
-    registry.emplace<Velocity>(entity);
+    safe_emplace<Velocity>(registry, entity);
 }
 
-void move_things(entt::registry& registry){
-    auto view = registry.view<Velocity,LocalTransform>();
-    for (auto &&[entity,vel,transform] : view.each()){
+void move_things(entt::registry &registry) {
+    auto view = registry.view<Velocity, LocalTransform>();
+    for (auto &&[entity, vel, transform] : view.each()) {
         transform.transform.position.x += vel.x;
         transform.transform.position.y += vel.y;
         vel.x = vel.y = 0;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "components/common.hpp"
 #include <fmt/printf.h>
 #include <imgui.h>
 #include <entt.hpp>
@@ -198,7 +199,7 @@ template <InspectableComponent... Component> struct Inspector {
                             return;
                         }
 
-                        registry->emplace_or_replace<Component>(entity, std::get<Component>(generated_component));
+                        bh::safe_emplace<Component>(*registry, entity, std::get<Component>(generated_component));
                     }(),
                     ...);
             }
