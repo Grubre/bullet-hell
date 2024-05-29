@@ -109,11 +109,40 @@ inline bool circle_circle_test(Circle &a, Transform &a_tr, Circle &b, Transform 
     return Vector2Length(diff) <= a.radius + b.radius;
 }
 
-/// TODO
-inline bool rect_circle_test(Rect &a, Transform &a_tr, Circle &b, Transform &b_tr) { return false; }
+inline bool rect_circle_test(Rect &a, Transform &a_tr, Circle &b, Transform &b_tr) {
+    auto a_pos = a_tr.position;
+	auto b_pos = b_tr.position;
 
-/// TODO
-inline bool rect_rect_test(Rect &a, Transform &a_tr, Rect &b, Transform &b_tr) { return false; }
+	auto a_half = Vector2{a.width / 2.f, a.height / 2.f};
+
+	auto a_tl = Vector2Subtract(a_pos, a_half);
+	auto a_br = Vector2Add(a_pos, a_half);
+
+	auto b_center = b_pos;
+
+	auto closest = Vector2{std::clamp(b_center.x, a_tl.x, a_br.x),
+						   std::clamp(b_center.y, a_tl.y, a_br.y)};
+
+	auto diff = Vector2Subtract(b_center, closest);
+
+	return Vector2Length(diff) <= b.radius;
+}
+
+inline bool rect_rect_test(Rect &a, Transform &a_tr, Rect &b, Transform &b_tr) {
+    auto a_pos = a_tr.position;
+	auto b_pos = b_tr.position;
+
+	auto a_half = Vector2{a.width / 2.f, a.height / 2.f};
+	auto b_half = Vector2{b.width / 2.f, b.height / 2.f};
+
+	auto a_tl = Vector2Subtract(a_pos, a_half);
+	auto a_br = Vector2Add(a_pos, a_half);
+
+	auto b_tl = Vector2Subtract(b_pos, b_half);
+	auto b_br = Vector2Add(b_pos, b_half);
+
+	return a_tl.x < b_br.x && a_br.x > b_tl.x && a_tl.y < b_br.y && a_br.y > b_tl.y;
+}
 
 inline bool collides_with(CollisionBody &a, Transform &a_tr, CollisionBody &b, Transform &b_tr) {
     return std::visit(overloaded{
