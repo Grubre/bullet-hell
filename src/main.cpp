@@ -31,6 +31,7 @@ void setup_raylib() {
 
     fmt::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
+    ToggleFullscreen();
     InitAudioDevice();
 }
 /*
@@ -95,8 +96,6 @@ auto main() -> int {
     const auto sub_id = manager.subscribe(bh::KeyboardEvent::DOWN, KEY_W, []() { fmt::println("Pressed w!"); });
     manager.subscribe(bh::KeyboardEvent::PRESS, KEY_S, [&]() { manager.unsubscribe(sub_id); });
 
-    [[maybe_unused]]auto player = bh::make_player(registry);
-
     auto& asset_manager = registry.ctx().emplace<bh::AssetManager>();
     auto sound = bh::load_asset(LoadSound, "win.mp3");
     auto image = bh::load_asset(LoadImage, "unknown.png");
@@ -104,7 +103,7 @@ auto main() -> int {
     using SE = bh::SoundEnum;
     asset_manager.register_texture(image, TE::PLAYER_TEXTURE, 100, 200);
     asset_manager.register_sound(sound, SE::WIN);
-    manager.subscribe(bh::KeyboardEvent::RELEASE, KEY_A,
+    manager.subscribe(bh::KeyboardEvent::RELEASE, KEY_P,
                       [&]() { PlaySound(registry.ctx().get<bh::AssetManager>().get_sound(SE::WIN)); });
 
     auto sprite = registry.create();
@@ -136,6 +135,10 @@ auto main() -> int {
 
     bh::init_collision_event_queues(registry);
 
+    [[maybe_unused]]auto player = bh::make_player(registry);
+
+    manager.subscribe(bh::KeyboardEvent::PRESS,KEY_B,[&](){bh::deal_damage(registry,player,10);});
+
     while (!WindowShouldClose()) {
         bh::notify_keyboard_press_system(manager);
 
@@ -163,6 +166,7 @@ auto main() -> int {
         bh::render_sprites(registry);
 
         bh::debug_draw_collsions(registry);
+        bh::move_things(registry);
 
         rlImGuiBegin();
 

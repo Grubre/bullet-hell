@@ -1,9 +1,16 @@
 set(EXEC_NAME "main")
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 
-add_executable(${EXEC_NAME} main.cpp keyinput.cpp assets/assets_loader.cpp assets/asset_manager.cpp
-        components/sprite.hpp
-        components/velocity.hpp)
+set(SOURCE_FILES
+    main.cpp
+    keyinput.cpp
+    assets/assets_loader.cpp
+    assets/asset_manager.cpp
+)
+
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
+
+add_executable(${EXEC_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_compile_definitions(${EXEC_NAME} PRIVATE RESOURCES_DIR="${RESOURCES_DIR}")
 
@@ -29,3 +36,6 @@ if(APPLE)
   target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
   target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
 endif()
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES})

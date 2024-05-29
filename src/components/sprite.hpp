@@ -43,7 +43,7 @@ inline void emplace<Sprite, TextureEnum>(entt::registry &registry, entt::entity 
     emplace<GlobalTransform>(registry, entity);
     emplace<Visible>(registry, entity);
     auto texture = registry.ctx().get<AssetManager>().get_texture(id);
-    registry.emplace<Sprite>(entity, texture, 0);
+    registry.emplace<Sprite>(entity, texture, uint16_t{} );
 }
 
 inline void render_sprites(entt::registry &registry) {
